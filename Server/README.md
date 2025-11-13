@@ -1,0 +1,197 @@
+🔬 SDK Leak Detection Dashboard
+
+A powerful, Flask-based web dashboard designed to detect, analyze, and report on data leaks within Android apps. This tool operates in real-time, leveraging mitmproxy to observe network traffic and calculate risk scores based on detected leaks, manifest analysis, and code obfuscation results.
+
+✨ Features
+
+Real-Time Leak Detection: Captures and logs outbound network traffic and identified data leaks (domain, timestamp, specific data fields).
+
+Risk Scoring: Provides unified risk scores based on three vectors:
+
+Network Leaks (Real-time)
+
+Manifest Analysis (Static)
+
+Obfuscation Detection (Static)
+
+Comprehensive Reporting: Exports findings as standard JSON/CSV logs or formatted PDF reports.
+
+Manifest Analysis: Analyzes uploaded APKs using androguard to identify high-risk permissions and vulnerabilities.
+
+Obfuscation Integration: Merges pre-processed obfuscation reports to calculate the obfuscation risk score.
+
+🛠️ Project Created By
+
+Shubhangi Yadav
+
+💻 Tools & Dependencies
+
+This project requires a robust Python environment and specific libraries for web development, network analysis, and reporting.
+
+Component
+
+Purpose
+
+Python 3.8+
+
+Primary development language.
+
+Flask
+
+Lightweight web framework for the dashboard.
+
+mitmproxy
+
+Man-in-the-middle proxy for real-time traffic capture.
+
+androguard
+
+Static analysis library for parsing APK manifests.
+
+reportlab, PyPDF2
+
+Libraries for generating and manipulating PDF reports.
+
+werkzeug
+
+WSGI utility library used by Flask.
+
+json, re, gzip
+
+Built-in Python libraries for data handling and parsing.
+
+🚀 Setup & Installation
+
+1. Cloning and Environment Setup
+
+Start by cloning the project and setting up a dedicated Python virtual environment (recommended).
+
+# Clone the repository (if applicable)
+# git clone <repository-url>
+# cd sdk-leak-dashboard
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# Windows
+venv\Scripts\activate
+# macOS / Linux
+source venv/bin/activate
+
+
+2. Install Dependencies
+
+Install all required Python packages:
+
+pip install flask mitmproxy reportlab PyPDF2 werkzeug androguard
+
+
+🏃 Running the Project
+
+The project requires at least two concurrent processes: the Network Sniffer (mitmproxy) and the Web Dashboard (Flask).
+
+Step A: Start the Real-time Leak Sniffer
+
+Run mitmproxy using your custom Python addon (sdk_sniffer.py). This captures all network traffic and writes/updates the findings to sdk_logs.json.
+
+Open your first terminal window (with the virtual environment active):
+
+mitmproxy -s sdk_sniffer.py
+
+
+(Ensure your Android device/emulator is configured to use the proxy running on the host machine.)
+
+Step B: Start the Analysis Dashboard
+
+Open your second terminal window (with the virtual environment active) and start the main Flask application:
+
+python app.py
+
+
+Step C: Access the Dashboard
+
+Open your browser and navigate to the default analysis port:
+
+[http://127.0.0.1:5050/](http://127.0.0.1:5050/)
+
+
+The main page will immediately display real-time leaks (domain, data sent, timestamp) captured by mitmproxy.
+
+📁📁 Server Dashboard :- Client Reporting and Uploader 
+
+The main.py file runs , dashboard (the Uploader) that streamlines the workflow, especially for generating and sending client reports.
+
+IP Address Configuration for main.py
+
+The Android client and the main.py server communicate directly over your local network. The main.py file contains the following line, which must be updated to match your machine's actual local IP address (e.g., x.x.x.x) to ensure network accessibility:
+
+if __name__ == "__main__":
+    app.run(host="x.x.x.x", port=5000) 
+
+
+
+If you do not change this IP to your local IP, the Android client will not be able to connect.
+
+Run the Uploader Dashboard
+
+Open your third terminal window (with the virtual environment active) and run the Uploader:
+
+python main.py
+
+
+
+Access the Uploader in your browser:
+
+http://<YOUR_LOCAL_IP>:5000/
+
+
+
+Uploader Functionality
+
+File Upload: Use this dashboard to upload necessary files (like APKs for manifest analysis).
+
+Report Delivery: Provides features to Save and send reports to client (including showing the client alias in the UI).
+
+PDF Generation: Use the Send PDF / download features for final report delivery.
+
+Windows Auto-Start: On Windows systems, the uploader page includes an "Open Analysis Dashboard" button that automatically executes python app.py for convenience (start cmd /c python app.py).
+
+📊 Static Analysis Components
+
+To get a complete risk score, you must process and integrate static analysis results:
+
+1. Manifest Risk Score(permission based)
+
+Access the Analyze APK Manifest section on the main dashboard (/manifest route) or use the Uploader to Upload the target APK file.
+
+The system uses androguard to analyze permissions and vulnerabilities, generating the Manifest Risk Score.
+
+2. Obfuscation Risk Score
+
+Ensure your obfuscation reports (generated by a separate tool) are placed inside the input/ directory.
+
+Run the merging script to consolidate results:
+
+python merge.py
+
+
+The merged output will be saved in the output/ directory.
+
+Access the /obfuscation route on the dashboard to upload this merged output and view the Obfuscation Risk Score.
+
+⚡ Quick Commands (Copy-Paste)
+
+For quickly launching the essential parts of the project:
+
+# 1. Run mitmproxy sniffer (captures data to sdk_logs.json)
+mitmproxy -s sdk_sniffer.py
+
+# 2. Run main analysis dashboard (port 5050)
+python app.py
+
+# 3. Run uploader/reporting dashboard (optional, port 5000)
+python main.py
+
+# 4. Run obfuscation merge script
+python merge.py
