@@ -1,6 +1,7 @@
-🔬 SDK Leak Detection Dashboard
+🔬 Data Leak Detection and server Dashboard
 
-A powerful, Flask-based web dashboard designed to detect, analyze, and report on data leaks within Android apps. This tool operates in real-time, leveraging mitmproxy to observe network traffic and calculate risk scores based on detected leaks, manifest analysis, and code obfuscation results.
+A powerful, Flask-based web dashboard designed to detect, analyze and report data leaks within Android apps. It works in real-time using mitmproxy to observe network traffic and calculate risk scores from detected leaks, manifest analysis, and obfuscation results.
+It also includes a built-in Server Dashboard, which receives app details and APK files from the Android client and sends final PDF reports back to the device, making the full workflow smooth and automatic.
 
 ✨ Features
 
@@ -180,7 +181,7 @@ mitmproxy -s sdk_sniffer.py
 # 2. Run main analysis dashboard (port 5050)
 python app.py
 
-# 3. Run uploader/reporting dashboard (optional, port 5000)
+# 3. Run uploader/reporting  server dashboard (port 5000)
 python main.py
 
 # 4. Run obfuscation merge script
