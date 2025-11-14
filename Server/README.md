@@ -28,39 +28,39 @@ Shubhangi Yadav
 💻 Tools & Dependencies
 
 This project requires a robust Python environment and specific libraries for web development, network analysis, and reporting.
-
-Component
-
-Purpose
+This project needs a Python environment and several libraries for the dashboard, network sniffing, and report generation.
 
 Python 3.8+
-
-Primary development language.
+Primary development language
+Check version: python --version
 
 Flask
-
-Lightweight web framework for the dashboard.
+Runs the web dashboard interface
+Install → pip install flask
 
 mitmproxy
-
-Man-in-the-middle proxy for real-time traffic capture.
+Captures live network traffic for leak detection
+Install → pip install mitmproxy
 
 androguard
+Reads APK files and analyzes the manifest
+Install → pip install androguard
 
-Static analysis library for parsing APK manifests.
+reportlab
+Creates detailed PDF reports
+Install → pip install reportlab
 
-reportlab, PyPDF2
-
-Libraries for generating and manipulating PDF reports.
+PyPDF2
+Edits, merges, and reads PDF files
+Install → pip install PyPDF2
 
 werkzeug
-
-WSGI utility library used by Flask.
+Provides server utilities used inside Flask
+Install → pip install werkzeug
 
 json, re, gzip
-
-Built-in Python libraries for data handling and parsing.
-
+Built-in Python modules used for parsing and processing
+No installation needed
 🚀 Setup & Installation
 
 1. Cloning and Environment Setup
