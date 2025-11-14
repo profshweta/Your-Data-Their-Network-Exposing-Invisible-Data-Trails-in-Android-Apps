@@ -66,18 +66,17 @@ Built-in Python libraries for data handling and parsing.
 
 Start by cloning the project and setting up a dedicated Python virtual environment (recommended).
 
-# Clone the repository (if applicable)
-# git clone <repository-url>
-# cd sdk-leak-dashboard
+Clone the repository (if applicable)
+git clone <repository-url>
+cd sdk-leak-dashboard
 
-# Create a virtual environment
+ Create a virtual environment
 python -m venv venv
 
-# Activate the virtual environment
-# Windows
+Activate the virtual environment
+Windows
 venv\Scripts\activate
-# macOS / Linux
-source venv/bin/activate
+
 
 
 2. Install Dependencies
