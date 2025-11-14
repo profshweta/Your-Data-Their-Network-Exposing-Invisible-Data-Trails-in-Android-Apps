@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>📊 App Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* 👇 sirf button ko top-right corner me lane ke liye */
+        .top-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-right">
+        <form action="/go_to_analysis">
+            <button type="submit">➡️ Open Analysis Dashboard</button>
+        </form>
+    </div>
+
+    <h1>📱 App Server Dashboard</h1>
+    <p>Monitor client uploads and manage reports</p>
+
+    <h2>📥 Received Data</h2>
+    <table>
+        <tr><th>Client</th><th>Type</th><th>Value</th></tr>
+        {% for item in data %}
+        <tr>
+            <td>{{ item.client }}</td>
+            <td>{{ item.type }}</td>
+            <td>{{ item.value }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>📦 Uploaded Files</h2>
+    <table>
+        <tr><th>Filename</th><th>Action</th></tr>
+        {% for f in files %}
+        <tr>
+            <td>{{ f }}</td>
+            <td><a href="/download/{{ f }}" class="btn">⬇️ Download</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <hr>
+
+    <h2>📄 Upload PDF Report</h2>
+    <form action="/upload_pdf" method="post" enctype="multipart/form-data">
+        <input type="file" name="pdf_file" accept="application/pdf" required>
+        <button type="submit">📤 Upload PDF</button>
+    </form>
+
+    <hr>
+
+    <h2>📤 Send PDF to a Client</h2>
+    {% if clients %}
+    <form onsubmit="sendPDF(event)">
+        <label>Select Client:</label>
+        <select id="clientSelect" required>
+            {% for c in clients %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">📨 Send PDF</button>
+    </form>
+    {% else %}
+    <p style="color: gray;">⚠️ No clients connected yet.</p>
+    {% endif %}
+
+    <script>
+        function sendPDF(e) {
+            e.preventDefault();
+            const client = document.getElementById('clientSelect').value;
+            window.location.href = `/send_pdf/${client}`;
+        }
+    </script>
+
+    <footer>
+        <p>Server Dashboard © 2025 | Powered by Flask 🐍</p>
+        <p>Made by <b>Shubhangi Yadav</b></p>
+
+    </footer>
+</body>
+</html>
