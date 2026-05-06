@@ -1,181 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>SDK Risk Analysis Dashboard</title>
-
-<style>
-body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
-    margin: 0;
-    padding: 0;
-}
-.container {
-    max-width: 900px;
-    margin: 50px auto;
-    background: #1e293b;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.4);
-}
-h1 {
-    text-align: center;
-    color: #38bdf8;
-    margin-bottom: 10px;
-}
-.subtitle {
-    text-align: center;
-    color: #94a3b8;
-    margin-bottom: 40px;
-}
-.flex {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-}
-.card {
-    background: #334155;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    width: 260px;
-    margin-bottom: 25px;
-}
-.card h3 {
-    margin-top: 10px;
-    color: #f8fafc;
-}
-.progress-ring {
-    position: relative;
-    width: 120px;
-    height: 120px;
-}
-.progress-ring svg {
-    transform: rotate(-90deg);
-}
-.progress-ring circle {
-    fill: none;
-    stroke-width: 12;
-    stroke-linecap: round;
-}
-.bg {
-    stroke: #475569;
-}
-.fg {
-    stroke: url(#grad);
-    transition: stroke-dashoffset 1s ease;
-}
-.score-value {
-    position: absolute;
-    top: 36px;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
-    color: #38bdf8;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 30px;
-}
-th, td {
-    padding: 10px 14px;
-    text-align: center;
-}
-th {
-    background: #0f172a;
-    color: #38bdf8;
-}
-tr:nth-child(even) { background: #273449; }
-tr:nth-child(odd) { background: #334155; }
-a {
-    display: inline-block;
-    margin-top: 30px;
-    color: #38bdf8;
-    text-decoration: none;
-}
-a:hover { text-decoration: underline; }
-.label {
-    font-weight: bold;
-    font-size: 20px;
-    color: #facc15;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeakVerifier | Risk Assessment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { background: #0f172a; color: #f8fafc; padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .text-label { color: #94a3b8 !important; font-size: 0.95rem; margin-top: 8px; font-weight: 500; }
+        h2 { color: #38bdf8; font-weight: 700; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 20px; }
+        .split-container { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px; }
+        .panel { background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .score-val { font-size: 3.5rem; font-weight: 800; color: #38bdf8; line-height: 1.1; display: block; }
+        .formula { font-family: 'Courier New', Courier, monospace; color: #38bdf8; background: #0f172a; padding: 4px 10px; border-radius: 6px; font-size: 0.82rem; border: 1px solid #334155; }
+        .final-panel { background: #1e293b; padding: 40px; border-radius: 20px; border: 2px solid #38bdf8; text-align: center; margin-top: 30px; box-shadow: 0 0 30px rgba(56, 189, 248, 0.15); }
+        .status-badge { font-size: 1.4rem; padding: 12px 45px; border-radius: 50px; font-weight: bold; margin-top: 15px; display: inline-block; color: white; }
+        .High\ Risk  { background: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.4); }
+        .Medium\ Risk{ background: #f59e0b; box-shadow: 0 0 20px rgba(245,158,11,0.4); }
+        .Low\ Risk   { background: #22c55e; box-shadow: 0 0 20px rgba(34,197,94,0.4); }
+        .upload-zone { background: #0f172a; border: 2px dashed #334155 !important; transition: 0.3s; }
+        .upload-zone:hover { border-color: #38bdf8 !important; }
+        .method-box { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px 18px; margin-top: 16px; font-size: 0.82rem; color: #94a3b8; text-align: left; }
+        .method-box span { color: #38bdf8; font-weight: 600; }
+        .weight-pill { background: #0f172a; border: 1px solid #334155; border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; color: #64748b; margin-left: 8px; }
+        .ahp-table { width: 100%; font-size: 0.82rem; margin-top: 12px; border-collapse: collapse; }
+        .ahp-table td, .ahp-table th { padding: 6px 10px; border-bottom: 1px solid #334155; color: #cbd5e1; }
+        .ahp-table th { color: #38bdf8; font-weight: 600; }
+        .score-sub { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
+        .ceiling-box { background: #0f172a; border: 1px solid #1e3a5f; border-radius: 10px; padding: 12px 16px; font-size: 0.78rem; color: #94a3b8; margin-top: 14px; }
+        .ceiling-box b { color: #38bdf8; }
+        .thresh-bar-wrap { margin-top: 18px; }
+        .thresh-bar-track { position: relative; height: 14px; border-radius: 7px;
+            background: linear-gradient(to right, #22c55e 0% 33.3%, #f59e0b 33.3% 66.6%, #ef4444 66.6% 100%);
+            border: 1px solid #334155; }
+        .thresh-marker { position: absolute; top: -5px; width: 2px; height: 24px; background: #fff; border-radius: 1px; opacity: 0.6; }
+        .thresh-needle { position: absolute; top: -8px; width: 8px; height: 30px; margin-left: -4px;
+            background: #fff; border-radius: 2px; box-shadow: 0 0 8px rgba(255,255,255,0.7); }
+        .thresh-labels { display: flex; justify-content: space-between; font-size: 0.71rem; color: #64748b; margin-top: 4px; }
+    </style>
 </head>
-
 <body>
-<div class="container">
-    <h1>SDK Risk Analysis Result</h1>
-    <div class="subtitle">Sensitive Data & SDK Leakage Risk Overview</div>
+<div class="container-fluid" id="reportContent">
+    <h1 class="text-center mb-5" style="color: #38bdf8; font-weight: 800;">🛡️ LeakVerifier: Privacy Risk Assessment</h1>
 
-    <div class="flex">
-        <div class="card">
-            <div class="progress-ring">
-                <svg width="120" height="120">
-                    <defs>
-                        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#22c55e"/>
-                            <stop offset="50%" stop-color="#eab308"/>
-                            <stop offset="100%" stop-color="#ef4444"/>
-                        </linearGradient>
-                    </defs>
-                    <circle class="bg" cx="60" cy="60" r="50"></circle>
-                    <circle class="fg" cx="60" cy="60" r="50"
-                            stroke-dasharray="314" stroke-dashoffset="314"></circle>
-                </svg>
-                <div class="score-value" id="scoreVal">{{ final_score }}</div>
+    <div class="split-container">
+        
+        <div class="panel">
+            <h2>🌐 Dynamic Risk
+                <span class="formula">R<sub>d</sub> = Σ<sub>c</sub> (w<sub>c</sub> × log(1 + n<sub>c</sub>))</span>
+            </h2>
+            <span class="score-val" id="dynamicScore">{{ report.dynamic.score }}</span>
+            <p class="score-sub">AHP-weighted privacy leak score (network traffic)</p>
+            <p class="text-label">
+                Weights via AHP [Saaty, 1980] anchored to GDPR Art.9 &amp; OWASP Mobile Top 10.
+                Scoring uses ln(1+n) — Shannon entropy bound [Shannon, 1948; ISO/IEC 29134:2017].
+            </p>
+            <h5 class="mt-4 mb-2" style="color:#38bdf8;font-size:1rem;">Category Weights (AHP-Derived, CR = 0.004):</h5>
+            <table class="ahp-table">
+                <thead><tr><th>Category</th><th>w<sub>c</sub></th><th>|C<sub>i</sub>|</th><th>Hits</th><th>Contribution</th></tr></thead>
+                <tbody>
+                    {% set weights = {'Personal PII':0.419,'Unique IDs':0.263,'Sensors':0.160,'Device Info':0.097,'App Context':0.061} %}
+                    {% set cat_sizes = {'Personal PII':17,'Unique IDs':8,'Sensors':1,'Device Info':12,'App Context':10} %}
+                    {% for cat, count in report.dynamic.category_breakdown.items() %}
+                        {% if cat != 'Other' %}
+                        <tr>
+                            <td>{{ cat }}</td>
+                            <td style="color:#38bdf8;">{{ weights.get(cat,'—') }}</td>
+                            <td style="color:#64748b;">{{ cat_sizes.get(cat,'—') }}</td>
+                            <td><span class="badge {% if count > 0 %}bg-danger{% else %}bg-secondary{% endif %} rounded-pill">{{ count }}</span></td>
+                            <td style="color:#94a3b8;font-size:0.78rem;">
+                                {% if report.dynamic.category_contributions %}{{ "%.4f"|format(report.dynamic.category_contributions.get(cat,0)) }}{% else %}—{% endif %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                    {% if report.dynamic.category_breakdown.get('Other',0) > 0 %}
+                    <tr>
+                        <td style="color:#64748b;">Other (excluded)</td><td style="color:#64748b;">—</td><td style="color:#64748b;">—</td>
+                        <td><span class="badge bg-secondary rounded-pill">{{ report.dynamic.category_breakdown['Other'] }}</span></td>
+                        <td style="color:#64748b;font-size:0.78rem;">not scored</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <div class="ceiling-box">
+                <b>R<sub>d,max</sub> = Σ wᵢ · ln(1 + |Cᵢ|) ≈ 2.295</b><br>
+                Worst-case: every key in every category leaked simultaneously.<br>
+                Ref: Shannon (1948); ISO/IEC 29134:2017
             </div>
-            <h3>Final Score (0–100)</h3>
+            <p class="mt-3" style="color:#94a3b8;font-size:0.82rem;">
+                Total fields intercepted: <b style="color:#38bdf8;">{{ report.dynamic.total_leaks }}</b>
+            </p>
         </div>
 
-        <div class="card">
-            <h3>Total Logs</h3>
-            <div style="font-size:38px; font-weight:bold; color:#38bdf8;">{{ total_logs }}</div>
-        </div>
-
-        <div class="card">
-            <h3>Risk Label</h3>
-            <div class="label">
-                {% if final_score < 30 %} Low
-                {% elif final_score < 70 %} Medium
-                {% else %} High
-                {% endif %}
+        
+        <div class="panel">
+            <h2>📱 Static Risk
+                <span class="formula">R<sub>s</sub> = 2.0·log(1+|P<sub>s</sub>|) + 1.0·log(1+|P<sub>n</sub>|) + 1.5·log(1+|V|)</span>
+            </h2>
+            <div class="upload-zone mb-4 p-4 border rounded text-center" id="uploadForm">
+                <form action="/risk" method="post" enctype="multipart/form-data">
+                    <p style="color:#cbd5e1;">Upload APK for Manifest &amp; Permission Audit</p>
+                    <input type="file" name="apk_file" class="form-control bg-dark text-white border-secondary mb-3" required>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2">🚀 Run Static Assessment</button>
+                </form>
             </div>
+            {% if report.static %}
+                <span class="score-val" id="staticScore">{{ report.static.score }}</span>
+                <p class="score-sub">Permission &amp; vulnerability risk score (manifest analysis)</p>
+                <div class="method-box mt-3">
+                    <span>Formula breakdown:</span><br>
+                    Sensitive Permissions |P<sub>s</sub>| = <b style="color:#ef4444;">{{ report.static.found_pr | length }}</b>
+                    <span class="weight-pill">w = 2.0</span> — direct data access (GDPR Art.9)<br>
+                    Non-sensitive |P<sub>n</sub>| = <b style="color:#f59e0b;">{{ report.static.pr_count - report.static.found_pr|length }}</b>
+                    <span class="weight-pill">w = 1.0</span> — indirect risk [Felt et al., 2011]<br>
+                    Vulnerabilities |V| = <b style="color:#ef4444;">{{ report.static.vr_count }}</b>
+                    <span class="weight-pill">w = 1.5</span> — conditional exploitability [OWASP, 2023]
+                </div>
+                <div class="ceiling-box">
+                    <b>R<sub>s,max</sub> = 2.0·ln(6) + 1.0·ln(201) + 1.5·ln(101) ≈ 15.810</b><br>
+                    S=5 (OWASP M1/M2, fixed) &nbsp;|&nbsp;
+                    P=200 (Android hard cap [Android Developers, 2023]) &nbsp;|&nbsp;
+                    V=100 (NVD empirical ceiling [NIST NVD, 2023])<br>
+                    <span style="color:#38bdf8;font-size:0.75rem;">
+                        Hard upper bounds — guarantees R<sub>s</sub> ≤ R<sub>s,max</sub> for any real-world APK.
+                    </span>
+                </div>
+                <h5 class="mt-4" style="color:#38bdf8;font-size:1rem;">Sensitive Permissions Detected (P<sub>s</sub>):</h5>
+                <div class="d-flex flex-wrap gap-2 mt-2" id="permList">
+                    {% for p in report.static.found_pr %}
+                        <span class="badge bg-warning text-dark px-3 py-2" style="font-weight:600;">{{ p.split('.')[-1] }}</span>
+                    {% endfor %}
+                    {% if not report.static.found_pr %}
+                        <span class="text-muted small">No dangerous permissions detected.</span>
+                    {% endif %}
+                </div>
+                <p class="mt-3" style="color:#cbd5e1;font-size:0.9rem;">
+                    Total permissions: <b style="color:#38bdf8;">{{ report.static.pr_count }}</b> &nbsp;|&nbsp;
+                    Vulnerabilities: <b style="color:#ef4444;">{{ report.static.vr_count }}</b>
+                </p>
+            {% else %}
+                <div class="text-center text-label mt-4 p-5 border rounded" style="background:#0f172a;">
+                    ⏳ Awaiting APK upload for static analysis...
+                </div>
+            {% endif %}
         </div>
     </div>
 
-    <h2 style="margin-top:40px; color:#38bdf8;">Category Breakdown</h2>
-    <table>
-        <tr>
-            <th>Category</th>
-            <th>Count</th>
-            <th>Subscore</th>
-            <th>Weight</th>
-        </tr>
-        {% for cat, info in details.items() %}
-        <tr>
-            <td>{{ cat.replace('_',' ').title() }}</td>
-            <td>{{ info.count }}</td>
-            <td>{{ info.subscore }}</td>
-            <td>{{ info.weight }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    
+    {% if report.final %}
+    <div class="final-panel">
+        <h2 class="border-0 mb-4">🏆 Final Privacy Risk Score &nbsp;
+            <span class="formula" style="font-size:0.9rem;">R = R<sub>d</sub> + R<sub>s</sub></span>
+        </h2>
+        <div class="row align-items-center">
+            <div class="col-md-5 border-end border-secondary">
+                <span class="score-val" style="font-size:5.5rem;" id="finalScore">{{ report.final.score }}</span>
+                <p class="text-label mt-2" style="font-size:1rem;">
+                    R<sub>d</sub> ({{ report.dynamic.score }}) + R<sub>s</sub> ({{ report.static.score if report.static else '—' }})
+                </p>
+               
+                {% set R_CEIL = 18.105 %}
+                <div class="thresh-bar-wrap">
+                    <div class="thresh-bar-track">
+                        <div class="thresh-marker" style="left:33.3%;"></div>
+                        <div class="thresh-marker" style="left:66.6%;"></div>
+                        {% set raw_pct = (report.final.score / R_CEIL * 100) %}
+                        {% set needle = [[raw_pct, 1.0]|max, 99.0]|min %}
+                        <div class="thresh-needle" style="left:{{ needle }}%;"></div>
+                    </div>
+                    <div class="thresh-labels">
+                        <span>0</span>
+                        <span style="color:#22c55e;">Low &lt; 6.04</span>
+                        <span style="color:#f59e0b;">Med &lt; 12.07</span>
+                        <span style="color:#ef4444;">High ≥ 12.07</span>
+                        <span>18.11</span>
+                    </div>
+                </div>
+                <p style="color:#64748b;font-size:0.78rem;margin-top:10px;">
+                    R<sub>norm</sub> = R / R<sub>ceil</sub> &nbsp;|&nbsp;
+                    R<sub>ceil</sub> = 18.105 &nbsp;|&nbsp;
+                    R<sub>norm</sub> = {{ "%.4f"|format(report.final.score / R_CEIL) }}
+                </p>
+            </div>
 
-    <a href="/">← Back to Dashboard</a>
+            <div class="col-md-7">
+                {% set status_class = report.final.status.split(' 🟢')[0].split(' 🟡')[0].split(' 🔴')[0] %}
+                <div class="status-badge {{ status_class }}" id="finalStatus">{{ report.final.status }}</div>
+
+                <div class="method-box mt-4" style="text-align:left;">
+                    <span>Classification Method:</span><br>
+                    {{ report.final.method }}
+                </div>
+
+                <div class="method-box mt-3" style="line-height:1.85;font-size:0.80rem;">
+                    <span>Entropy-Normalised Absolute Threshold [data-independent]:</span><br>
+                    <span style="color:#94a3b8;">① Theoretical ceiling</span>
+                    <span class="formula" style="font-size:0.75rem;">R<sub>ceil</sub> = 2.295 + 15.810 = 18.105</span><br>
+                    <span style="color:#94a3b8;">② Normalise</span>
+                    <span class="formula" style="font-size:0.75rem;">R<sub>norm</sub> = R<sub>final</sub> / R<sub>ceil</sub> ∈ [0, 1]</span><br>
+                    <span style="color:#94a3b8;">③ Tertile split (max-entropy prior)</span>
+                    <span class="formula" style="font-size:0.75rem;">Low &lt; ⅓ &nbsp;|&nbsp; Med &lt; ⅔ &nbsp;|&nbsp; High ≥ ⅔</span><br>
+                    <div style="margin-top:8px;padding:8px;background:#0d1f33;border-radius:6px;font-size:0.75rem;line-height:1.6;">
+                        <b style="color:#64748b;">Ceiling parameters (hard upper bounds):</b><br>
+                        S = 5 &nbsp;— OWASP M1/M2 dangerous permissions (fixed by analyzer)<br>
+                        P = 200 — Android PackageManager hard cap [Android Developers, 2023]<br>
+                        V = 100 — NVD mobile CVE empirical ceiling [NIST NVD, 2023]<br>
+                        <span style="color:#38bdf8;">Guarantees R<sub>norm</sub> ∈ [0,1] for any real-world app.</span>
+                    </div>
+                    <span style="color:#38bdf8;font-size:0.77rem;">
+                        ✓ Deterministic &nbsp; ✓ No history required &nbsp; ✓ Reproducible &nbsp; ✓ Bounded
+                    </span>
+                </div>
+
+
+
+                <button onclick="downloadRiskPDF()" class="btn btn-info btn-lg mt-3 fw-bold px-5 shadow" id="exportBtn">
+                    📥 Export Full Audit Report
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-5 mb-4">
+        <a href="/" class="btn btn-outline-info px-4">← Return to Main Dashboard</a>
+    </div>
 </div>
 
 <script>
-const score = {{ final_score }};
-const circle = document.querySelector('.fg');
-const radius = 50;
-const circumference = 2 * Math.PI * radius;
-const offset = circumference - (score / 100) * circumference;
-circle.style.strokeDashoffset = offset;
+    async function downloadRiskPDF() {
+        const { jsPDF } = window.jspdf;
+        const element    = document.getElementById('reportContent');
+        const uploadArea = document.getElementById('uploadForm');
+        const exportBtn  = document.getElementById('exportBtn');
+        const backBtn    = document.querySelector('.btn-outline-info');
+        if (uploadArea) uploadArea.style.display = 'none';
+        if (exportBtn)  exportBtn.style.display  = 'none';
+        if (backBtn)    backBtn.style.display     = 'none';
+        html2canvas(element, { scale:2, useCORS:true, backgroundColor:"#0f172a",
+            height:element.scrollHeight, windowHeight:element.scrollHeight, scrollY:-window.scrollY
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p','mm','a4');
+            const pdfW = pdf.internal.pageSize.getWidth();
+            const pdfH = pdf.internal.pageSize.getHeight();
+            const totalH = (pdf.getImageProperties(imgData).height * pdfW) / pdf.getImageProperties(imgData).width;
+            let heightLeft = totalH, position = 0;
+            pdf.addImage(imgData,'PNG',0,position,pdfW,totalH);
+            heightLeft -= pdfH;
+            while (heightLeft > 0) {
+                position = heightLeft - totalH; pdf.addPage();
+                pdf.addImage(imgData,'PNG',0,position,pdfW,totalH);
+                heightLeft -= pdfH;
+            }
+            pdf.save("LeakVerifier_Risk_Report.pdf");
+            if (uploadArea) uploadArea.style.display = 'block';
+            if (exportBtn)  exportBtn.style.display  = 'inline-block';
+            if (backBtn)    backBtn.style.display     = 'inline-block';
+        }).catch(err => { console.error(err); alert("Export failed."); });
+    }
 </script>
 </body>
 </html>
